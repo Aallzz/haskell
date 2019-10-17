@@ -49,8 +49,8 @@ filename :: String
 filename = "citywalls.json"
 
 parseStreets :: Value -> Map.Map T.Text Value 
-parseStreets (Object hashMap) = HM.foldlWithKey' (hui Map.insert) Map.empty hashMap 
-    where hui f = \c a b -> f a b c
+parseStreets (Object hashMap) = HM.foldlWithKey' (subFunc Map.insert) Map.empty hashMap 
+    where subFunc f = \c a b -> f a b c
 
 getArrayFromValue :: Value -> Array 
 getArrayFromValue (Array array) = array
@@ -85,10 +85,10 @@ print_ t = unsafePerformIO $ do {print "GOVON"; putStrLn $ ushow t; return t}
 
 updateWith :: Map.Map T.Text Value -> Value -> Map.Map T.Text (T.Text, T.Text)
 updateWith streets (Object housesMap) = 
-    HM.foldlWithKey' (hui Map.insert) Map.empty housesMap    
+    HM.foldlWithKey' (subFunc Map.insert) Map.empty housesMap    
     where 
-        hui :: (T.Text -> (T.Text, T.Text) -> Map.Map T.Text (T.Text, T.Text)-> Map.Map T.Text (T.Text, T.Text)) -> Map.Map T.Text (T.Text, T.Text) -> T.Text -> Value -> Map.Map T.Text (T.Text, T.Text) 
-        hui f c a (Object b) = let  value  = getFirstFromAddrObject =<< V.head <$> (getArrayFromValue <$> HM.lookup "addresses" b)
+        subFunc :: (T.Text -> (T.Text, T.Text) -> Map.Map T.Text (T.Text, T.Text)-> Map.Map T.Text (T.Text, T.Text)) -> Map.Map T.Text (T.Text, T.Text) -> T.Text -> Value -> Map.Map T.Text (T.Text, T.Text) 
+        subFunc f c a (Object b) = let  value  = getFirstFromAddrObject =<< V.head <$> (getArrayFromValue <$> HM.lookup "addresses" b)
                                     streetName = getStreetNameByAddrId streets (fst <$> value) 
                                     houseNumber = fromMaybe "0" (snd <$> value)
                             in 
