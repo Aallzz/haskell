@@ -4,7 +4,7 @@ import Lib
 import XMLparser
 import CborSmth
 import YandexMapsApi
-import Blabla
+import Solver
 
 main :: IO ()
-main = blasmth 
+main = solve 

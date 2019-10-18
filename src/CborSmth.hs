@@ -89,8 +89,8 @@ updateWith streets (Object housesMap) =
     where 
         subFunc :: (T.Text -> (T.Text, T.Text) -> Map.Map T.Text (T.Text, T.Text)-> Map.Map T.Text (T.Text, T.Text)) -> Map.Map T.Text (T.Text, T.Text) -> T.Text -> Value -> Map.Map T.Text (T.Text, T.Text) 
         subFunc f c a (Object b) = let  value  = getFirstFromAddrObject =<< V.head <$> (getArrayFromValue <$> HM.lookup "addresses" b)
-                                    streetName = getStreetNameByAddrId streets (fst <$> value) 
-                                    houseNumber = fromMaybe "0" (snd <$> value)
+                                        streetName = getStreetNameByAddrId streets (fst <$> value) 
+                                        houseNumber = fromMaybe "0" (snd <$> value)
                             in 
                             case (streetName) of 
                                 Nothing -> c

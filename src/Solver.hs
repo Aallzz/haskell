@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Blabla (
-    blasmth
+module Solver(
+   solve 
 ) where 
 
 
@@ -27,7 +27,7 @@ filename = "citywalls.json"
 configureAddress :: (T.Text, T.Text) -> Address
 configureAddress (streetname, housenumber) = Address {street = T.unpack streetname, housenumber = T.unpack housenumber} 
 
-blasmth = do 
+solve = do 
     fileHandle <- openFile filename ReadMode   
     content <- BL.hGetContents fileHandle  
     let r = decode content :: Maybe Value
