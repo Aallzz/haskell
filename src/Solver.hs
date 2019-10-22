@@ -17,9 +17,9 @@ import Data.Maybe
 import Data.Foldable (for_)
 
 import System.IO
+import System.IO.Unsafe
 
 import Text.Show.Unicode
-
 
 filename :: String 
 filename = "citywalls.json"
@@ -27,13 +27,18 @@ filename = "citywalls.json"
 configureAddress :: (T.Text, T.Text) -> Address
 configureAddress (streetname, housenumber) = Address {street = T.unpack streetname, housenumber = T.unpack housenumber} 
 
+print_ :: Show a => a -> a
+print_ t = unsafePerformIO $ do {print "solver"; System.IO.putStrLn $ ushow t; return t}
+
+
 solve = do 
     fileHandle <- openFile filename ReadMode   
     content <- BL.hGetContents fileHandle  
     let r = decode content :: Maybe Value
     let houseAddresses = getHouseAddresses <$> r 
     osmMap <- getOSMNormalizedCoordMap
-    
+   
+    System.IO.putStrLn "Process start"
     for_ (Map.toList $ fromJust houseAddresses) $ (\(id, (streetName, housenumber)) ->
         do 
             let addr = configureAddress (streetName, housenumber)
@@ -41,8 +46,8 @@ solve = do
             locFromYandex <- getLocationInSpb addr
             locFromOsmM <- getOSMLocation addr osmMap  
             let locFromOsm = fromMaybe (-1 :: Double, -1 :: Double) locFromOsmM 
-            System.IO.writeFile "answer.txt" (ushow (locationName, (locFromYandex, locFromOsm))) 
-            System.IO.putStrLn (ushow (locationName, (locFromYandex, locFromOsm))) 
+            System.IO.appendFile "answer.txt" ((ushow (locationName, (locFromYandex, locFromOsm))) ++ "\n") 
+            -- System.IO.putStrLn (ushow (locationName, (locFromYandex, locFromOsm))) 
             )
 
 
@@ -52,11 +57,8 @@ solve = do
     -- Prelude.putStrLn (show locFromYandex)
     -- smth <- sequence $ getStreetInSpbName <$> one
     -- Prelude.putStrLn ("LOL " ++ ushow smth)
-    -- osmMap <- getOSMNormalizedCoordMap
     -- temp <- (sequence $ ((flip getOSMLocation osmMap) <$> one ))
     -- let locFromOsm = fromMaybe Nothing temp
-    -- locFromOsm <- sequence $ temp
-    -- locFromOsm <- sequence $ getLocation <$> one
     -- Prelude.putStrLn (show locFromOsm)
 
 

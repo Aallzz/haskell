@@ -23,6 +23,7 @@ import Data.Char
 import YandexMapsApi
 import Data.Map.Strict as Map
 import Data.Text as T
+import Data.Maybe
 import Data.ByteString.Char8 as Char8 (unpack)
 import System.IO.Unsafe
 import Text.Show.Unicode
@@ -68,14 +69,18 @@ getHouseAddressFromNode :: Xeno.DOM.Node -> (ByteString, ByteString)
 getHouseAddressFromNode node = 
     let tagWithHouseNumber = findTagAttributeWithKeyInNode node "addr:housenumber"
         tagWithStreet = findTagAttributeWithKeyInNode node "addr:street" 
+        tagWithCity = findTagAttributeWithKeyInNode node "addr:city"
         housenumber = case tagWithHouseNumber of 
             Nothing -> Nothing
             Just tagWithHouseNumber -> getTagValue(tagWithHouseNumber)
         street = case tagWithStreet of 
             Nothing -> Nothing 
             Just tagWithStreet -> getTagValue(tagWithStreet)
+        city = case tagWithCity of 
+            Nothing -> "" 
+            Just tagWithCity -> toString $ fromMaybe "" (getTagValue tagWithCity)
     in 
-        (fromString ((toString (street ?: S.empty))), housenumber ?: S.empty)
+        (fromString ((toString (street ?: S.empty)) ++ " " ++ city), housenumber ?: S.empty)
 
 
 getHouseCoordinatesFromNode :: Xeno.DOM.Node -> (ByteString, ByteString)
@@ -129,7 +134,7 @@ getnormalizedName addr = getStreetInSpbName addr
 
 getOSMNormalizedCoordMap :: IO (Map Text (ByteString, ByteString))
 getOSMNormalizedCoordMap = do 
-    handle <- openFile "map (2).osm" ReadMode 
+    handle <- openFile "russia-latest.osm" ReadMode 
     xml <- S.hGetContents handle 
     let doc = parse xml 
     let nodes = Prelude.filter ((== "node") . name) (children $ fromRightE doc) 
@@ -158,7 +163,7 @@ getOSMLocation addr mp = do
 
 getLocation :: Address -> IO  (Maybe (Double, Double) )
 getLocation address = do
-    handle <- openFile "map (2).osm" ReadMode 
+    handle <- openFile "russia-latest.osm" ReadMode 
     xml <- S.hGetContents handle 
     let doc = parse xml 
     let nodes = Prelude.filter ((== "node") . name) (children $ fromRightE doc) 
@@ -179,7 +184,7 @@ getLocation address = do
     return $ (\(a, b) -> (read (Char8.unpack a) :: Double, read (Char8.unpack b) :: Double)) <$> (Map.lookup (fadr) mp)
 
 doSmth = do  
-    mapOsmXmlHandle <- openFile "map (2).osm" ReadMode
+    mapOsmXmlHandle <- openFile "russia-latest.osm" ReadMode
     xml <- S.hGetContents mapOsmXmlHandle 
     let doc = parse xml 
     let nodes = Prelude.filter ((== "node") . name) (children $ fromRightE doc) 
